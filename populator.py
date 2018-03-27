@@ -1,3 +1,16 @@
+'''
+ * DATABASE POLULATOR
+ * 
+ * USE THE COMMAND
+ *      
+ *      "source modules/bin/activate && python3 populator.py > tables.sql && deactivate"
+ * 
+ * IN THE LINUX TERMINAL TO CREATE OUTPUT THE RESULTS TO AN SQL FILE
+ *
+'''
+
+
+
 from faker import Faker
 import random
 import hashlib

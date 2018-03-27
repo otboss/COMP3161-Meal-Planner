@@ -1,3 +1,13 @@
+/*
+ * DATABASE POLULATOR
+ * 
+ * USE THE COMMAND 
+ *      
+ *      "node populator.js > tables.sql"
+ * 
+ * IN THE LINUX TERMINAL TO CREATE OUTPUT THE RESULTS TO AN SQL FILE
+ * */
+
 var faker = require('faker');
 var sha256 = require('sha256');
 
