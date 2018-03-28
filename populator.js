@@ -10,6 +10,11 @@
 
 var faker = require('faker');
 var sha256 = require('sha256');
+var fs = require('fs');
+//var jsdom = require('jsdom');
+//const { JSDOM } = jsdom;
+var request = require('request');
+var unique = require('array-unique');
 
 generateRecords = function(accountTable, recipeTable, numberOfAccounts, numberOfRecipies){
     return new Promise(function(resolve, reject){
@@ -35,7 +40,7 @@ generateRecords = function(accountTable, recipeTable, numberOfAccounts, numberOf
             "vegeterian",
             "vegan" 
         ]      
-        accountSql = "INSERT INTO "+accountTable+" (id, email, password, salt, fname, lname, dob, diet) VALUES"; 
+        accountSql = "INSERT INTO "+accountTable+" (aid, email, password, salt, fname, lname, dob, diet) VALUES"; 
         name = "";
         salt = "";
         for(var i=0; i < numberOfAccounts; i++) {
@@ -55,10 +60,59 @@ generateRecords = function(accountTable, recipeTable, numberOfAccounts, numberOf
             else
                 accountSql += ",";
         }
-        resolve(accountSql)
+        
+        
+        //meals = fs.readFileSync('meals.txt').split("\n");
+        getFood = function(){
+            return new Promise(function(resolve, reject){
+                request('https://api.jamesoff.net/recipe', function (error, response, recipe) {
+                  resolve(JSON.parse(recipe));
+                })
+            });
+        }   
+        
+        getFood().then(function(data){
+            console.log(data);
+        })
+        
+        generateAllMeals = function(){
+            return new Promise(function(resolve, reject){
+                var meals = []
+                for(var x = 0; x < numberOfRecipies; x++){
+                    getFood().then(function(data){
+                        meals.push(data);
+                    })
+                }
+                resolve(meals);
+            });
+        }
+        
+        
+        new Promise(function(resolve, reject){
+            generateAllMeals().then(function(recipies){
+                fs.writeFile('meals.txt', JSON.stringify(recipies), function(err){
+                    
+                });
+                recipeSql = "INSERT INTO "+recipeTable+" (rid, rname, servings) VALUES";
+                console.log(recipies)
+                for(var i = 0; i < recipies.length; i++){
+                    recipeSql += "\n("+i+",";
+                    recipeSql += "'"+recipies[i]["title"]+"',";
+                    recipeSql += "'"+recipies[i]["serves"]+"',";
+                    if(i == recipies.length - 1)
+                        recipeSql += ";";
+                    else
+                        recipeSql += ",";
+                }
+                resolve(recipeSql);         
+            }) 
+        }).then(function(recipeSql){
+            //FINAL RESEOLVE
+            resolve(accountSql+"\n\n"+recipeSql);
+        });
     });
 }
 
-generateRecords("yes", "no", 100000, 200).then(function(data){
+generateRecords("yes", "no", 100000, 3).then(function(data){
     console.log(data)
 });
